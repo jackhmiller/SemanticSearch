@@ -70,6 +70,7 @@ class CataloguePreprocessing:
 	def run_preprocessing(self):
 		self.load_data()
 		self.get_parse_catalogue()
+		self.clean_catalogue_text()
 
 	def load_data(self):
 		with open("athleta_sample.ndjson", 'r', encoding='utf-8') as file:
@@ -93,12 +94,15 @@ class CataloguePreprocessing:
 		if self.save_to_file:
 			df_clean.to_parquet("cleaned_search_data.parquet",
 								index=True)
+		else:
+			return df_clean
 
-		return df_clean
 
 
 
 if __name__ == "__main__":
 	features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	_ = CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
-							   features=features)
+	CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
+						   features=features,
+						   save_to_file=True
+						   ).run_preprocessing()
