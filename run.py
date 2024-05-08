@@ -9,6 +9,8 @@ def main():
 	2. Build embeddings
 	3. Load embeddings to elastic
 	"""
+
+	########################## OFFLINE
 	features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
 	CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
 						   features=features,
@@ -26,6 +28,8 @@ def main():
 				name='catalogue_embeddings')
 
 	es.reindex()
+
+	########################## ONLINE
 
 	test_sentence = "Womens sports bra black"
 	response = es.search(test_sentence)

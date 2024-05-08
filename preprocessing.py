@@ -15,6 +15,9 @@ import warnings
 from parser import parse_catalogue
 
 
+PATH_OUT = "./data/data_with_embeddings.parquet"
+
+
 class TextPreprocessor:
 	def __init__(self, text):
 		self.text = text
@@ -88,11 +91,13 @@ class CataloguePreprocessing:
 		df = pd.DataFrame(self.parsed_catalogue).T
 		df = df.astype(str)
 		df_clean = pd.DataFrame()
+		df_clean['url'] = df['url']
 		for col in self.features:
 			df_clean[col] = df[col].apply(TextPreprocessor.preprocess)
 
 		if self.save_to_file:
-			df_clean.to_parquet("cleaned_search_data.parquet",
+			print("saving")
+			df_clean.to_parquet(PATH_OUT,
 								index=True)
 		else:
 			return df_clean

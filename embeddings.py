@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
-import torch.nn.functional as F
 import pandas as pd
 from typing import Union, List
 from sentence_transformers import SentenceTransformer
