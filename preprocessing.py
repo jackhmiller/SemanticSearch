@@ -15,7 +15,7 @@ import warnings
 from parser import parse_catalogue
 
 
-PATH_OUT = "./data/data_with_embeddings.parquet"
+PATH_OUT = "./data/cleaned_search_data.parquet"
 
 
 class TextPreprocessor:
@@ -76,7 +76,7 @@ class CataloguePreprocessing:
 		self.clean_catalogue_text()
 
 	def load_data(self):
-		with open("athleta_sample.ndjson", 'r', encoding='utf-8') as file:
+		with open(self.file_path, 'r', encoding='utf-8') as file:
 			raw_catalogue = []
 			for line in file:
 				data = json.loads(line)

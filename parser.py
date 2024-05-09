@@ -76,8 +76,12 @@ def parse_catalogue(raw_catalogue):
 			else:
 				item_dict["overviews"] = None
 
+			# URL
 			try:
-				item_dict["url"] = item_iter["customerChoice"][0]['fullProductPageURL']
+				if item_iter["customerChoice"]:
+					item_dict["url"] = item_iter["customerChoice"][0]['fullProductPageURL']
+				else:
+					item_dict["url"] = None
 			except KeyError:
 				item_dict["url"] = None
 
