@@ -27,6 +27,7 @@ class TextPreprocessor:
 	def run_preprocessing(self):
 		text = self.text.apply(self.preprocess)
 		text = text.apply(self.remove_stopwords)
+		text = text.apply(self.remove_double_words)
 		# text = text.apply(self.stemming)
 		text = text.apply(self.lemmatizing)
 		return text
@@ -49,6 +50,10 @@ class TextPreprocessor:
 	def remove_stopwords(text):
 		chars = [i for i in text.split() if i not in stopwords.words('english')]
 		return ' '.join(chars)
+
+	@staticmethod
+	def remove_double_words(text):
+		return ' '.join(list(set([i for i in text.split(' ')])))
 
 	def stemming(self, text):
 		chars = [self.stemmer.stem(i) for i in word_tokenize(text)]
@@ -102,7 +107,9 @@ class CataloguePreprocessing:
 		else:
 			return df_clean
 
-
+	def enrich_text(self, feature):
+		#todo
+		pass
 
 
 if __name__ == "__main__":

@@ -8,14 +8,15 @@ def main():
 	1. Parse catalogue
 	2. Build embeddings
 	3. Load embeddings to elastic
+	(4. Automate search quality testing)
 	"""
 
 	########################## OFFLINE
-	features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
-						   features=features,
-						   save_to_file=True
-						   ).run_preprocessing()
+	# features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
+	# CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
+	# 					   features=features,
+	# 					   save_to_file=True
+	# 					   ).run_preprocessing()
 
 	feature = "overviews"
 	model = EmbeddingModel(feature, inference=False)
