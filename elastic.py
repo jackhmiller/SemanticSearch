@@ -42,7 +42,8 @@ class Search:
 			yield {
 				'_index': self.index_name,
 				'_id': idx,
-				'_embedding': row['embeddings']
+				'_embedding': row['embeddings'],
+				'_url': row['url']
 			}
 
 	def insert_document(self, document):

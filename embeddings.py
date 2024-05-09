@@ -80,10 +80,6 @@ class EmbeddingModel:
 
 
 
-
-
-
-
 if __name__ == "__main__":
 	features = "overviews"
 	model = EmbeddingModel(features, inference=False)
