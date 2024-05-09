@@ -19,10 +19,14 @@ class Search:
 		self.index_name = name
 		self.model = EmbeddingModel(inference=True)
 
-	def get_client_info(self):
+	@property
+	def client_info(self):
 		client_info = self.es.info()
-		print('Connected to Elasticsearch')
-		pprint(client_info.body)
+		return pprint(client_info.body)
+
+	@property
+	def index_mapping(self):
+		return self.es.indices.get_mapping(index=self.index_name)
 
 	def get_embedding(self, text):
 		return self.model.run_embedding_model(inference_sample=text)
@@ -79,6 +83,7 @@ if __name__ == '__main__':
 	es = Search(host='http://localhost:9200',
 				name='catalogue_embeddings')
 
+	# Uncomment if new property is to be added
 	# es.reindex()
 
 	test_sentence = "Womens sports bra black"
@@ -87,3 +92,4 @@ if __name__ == '__main__':
 	for hit in response["hits"]["hits"]:
 		print("Document ID:", hit["_id"])
 		print("Similarity Score:", hit["_score"])
+		print("URL:", hit["_source"]["_url"])
