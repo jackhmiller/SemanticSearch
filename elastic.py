@@ -13,9 +13,8 @@ def load_docs(path: str) -> pd.DataFrame:
 
 
 class Search:
-	def __init__(self, host, data_loader, name: str):
+	def __init__(self, host, name: str):
 		self.es = Elasticsearch(host)
-		self.data_loader = data_loader
 		self.index_name = name
 		self.model = EmbeddingModel(inference=True)
 
@@ -36,7 +35,11 @@ class Search:
 							   ignore_unavailable=True)
 		self.es.indices.create(index=self.index_name)
 
-	def reindex(self):
+	def reindex_from_df(self, df: pd.DataFrame):
+		self.create_index()
+		bulk(self.es, self.generate_docs(df))
+
+	def reindex_from_gcs(self):
 		# df = load_docs(PATH)
 		df = self.data_loader.read_hash('embed')
 		self.create_index()

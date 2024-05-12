@@ -3,9 +3,13 @@ from embeddings import EmbeddingModel
 from elastic import Search
 from dotenv import load_dotenv
 from data_utils import DataManager
+from elastic import Search
 
 
-def main(file: str, features: list[str], embedding_features: list[str]):
+def main(file: str,
+		 features: list[str],
+		 embedding_features: list[str],
+		 deploy: bool=False):
 	"""
 	Run three stages end to end
 	1. Parse catalogue
@@ -39,11 +43,17 @@ def main(file: str, features: list[str], embedding_features: list[str]):
 		data_manager.save_parquet_to_gcs(data_with_embedding,
 										 'embed')
 
+		if deploy:
+			es = Search(host='http://localhost:9200',
+						name='catalogue_embeddings',
+						)
+			es.reindex_from_df(data_with_embedding)
 
 
 if __name__ == '__main__':
-	parse_features = ['url', 'style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
+	parse_features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
 	embed = ['overviews']
 	main(file='athleta_sample.ndjson',
 		 features=parse_features,
-		 embedding_features=embed)
+		 embedding_features=embed,
+		 deploy=False)

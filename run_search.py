@@ -13,8 +13,6 @@ def main():
 
 	es.reindex()
 
-	########################## ONLINE
-
 	results = {}
 	test_sentences = ["Womens sports bra black"]
 	for sentence in test_sentences:
@@ -27,8 +25,6 @@ def main():
 
 
 if __name__ == '__main__':
-	parse_features = ['url', 'style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	embed = ['overviews']
 	main(file='athleta_sample.ndjson',
 		 features=parse_features,
 		 embedding_features=embed)
