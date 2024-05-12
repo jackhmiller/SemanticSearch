@@ -35,8 +35,8 @@ def main(file: str, features: list[str], embedding_features: list[str]):
 		model = EmbeddingModel(features=embedding_features,
 							   inference=False,
 							   )
-		model.run_embedding_model(data=data)
-		data_manager.save_parquet_to_gcs(data,
+		data_with_embedding = model.run_embedding_model(data=data)
+		data_manager.save_parquet_to_gcs(data_with_embedding,
 										 'embed')
 
 

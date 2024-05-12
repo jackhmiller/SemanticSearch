@@ -61,6 +61,6 @@ class DataManager:
 			destination_uri = f'gs://{os.getenv("BUCKET_NAME")}/{path}'
 			df.to_parquet(destination_uri)
 		if phase == 'embed':
-			path = os.path.join(self.cleaned_data_path, self.embedding_hash)
+			path = os.path.join(self.embedding_data_path, self.embedding_hash)
 			destination_uri = f'gs://{os.getenv("BUCKET_NAME")}/{path}'
 			df.to_parquet(destination_uri)
