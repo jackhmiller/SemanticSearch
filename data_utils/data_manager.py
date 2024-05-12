@@ -6,7 +6,10 @@ import io
 import pyarrow.parquet as pq
 
 class DataManager:
-	def __init__(self, file: str, features: list[str], embed: list[str]):
+	def __init__(self,
+				 features: list[str],
+				 embed: list[str],
+				 file: str=None):
 		self.raw_file_name = file
 		# self.feature_hash = hashlib.sha1(" ".join(features).encode()).hexdigest()
 		self.feature_hash = "_".join(features) + '.parquet'

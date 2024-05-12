@@ -4,12 +4,8 @@ import json
 from pprint import pprint
 import pandas as pd
 from embeddings import EmbeddingModel
-
-# PATH = "./data/data_with_embeddings.parquet"
-
-def load_docs(path: str) -> pd.DataFrame:
-	df = pd.read_parquet(path)
-	return df
+from google.cloud import storage
+import os
 
 
 class Search:
@@ -40,8 +36,9 @@ class Search:
 		bulk(self.es, self.generate_docs(df))
 
 	def reindex_from_gcs(self):
-		# df = load_docs(PATH)
-		df = self.data_loader.read_hash('embed')
+		gcs = storage.Client()
+		bucket = gcs.bucket(os.getenv("BUCKET_NAME"))
+		df = self.data_loader.read_hash('embed') #todo preplace deployed embeddings
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 
@@ -61,7 +58,7 @@ class Search:
 	def insert_documents(self, documents: pd.DataFrame):
 		return bulk(self.es, self.generate_docs(documents))
 
-	def search(self, text):
+	def knn_search(self, text):
 		search_kwargs = {'query':
 								{
 									"match": {
@@ -86,14 +83,3 @@ class Search:
 if __name__ == '__main__':
 	es = Search(host='http://localhost:9200',
 				name='catalogue_embeddings')
-
-	# Uncomment if new property is to be added
-	# es.reindex()
-
-	test_sentence = "Womens sports bra black"
-	response = es.search(test_sentence)
-
-	for hit in response["hits"]["hits"]:
-		print("Document ID:", hit["_id"])
-		print("Similarity Score:", hit["_score"])
-		print("URL:", hit["_source"]["_url"])

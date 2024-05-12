@@ -1,6 +1,5 @@
 from preprocessing import CataloguePreprocessing
 from embeddings import EmbeddingModel
-from elastic import Search
 from dotenv import load_dotenv
 from data_utils import DataManager
 from elastic import Search
@@ -9,20 +8,22 @@ from elastic import Search
 def main(file: str,
 		 features: list[str],
 		 embedding_features: list[str],
-		 deploy: bool=False):
+		 index_name: str,
+		 deploy: bool=False,
+		 overwrite: bool=False):
 	"""
 	Run three stages end to end
 	1. Parse catalogue
 	2. Build embeddings
 	3. Load embeddings to elastic
-	(4. Automate search quality testing)
+	(4. Automate knn_search quality testing)
 	"""
 	load_dotenv()
 	data_manager = DataManager(file=file,
 							   features=features,
 							   embed=embedding_features)
 
-	if data_manager.check_hash(phase='clean'):
+	if (data_manager.check_hash(phase='clean')) & (not overwrite):
 		pass
 	else:
 		raw_catalogue = data_manager.read_raw_catalogue()
@@ -32,7 +33,7 @@ def main(file: str,
 		data_manager.save_parquet_to_gcs(df=cleaned_data,
 										 phase='clean')
 
-	if data_manager.check_hash(phase='embed'):
+	if (data_manager.check_hash(phase='embed')) & (not overwrite):
 		pass
 	else:
 		data = data_manager.read_hash('clean')
@@ -45,7 +46,7 @@ def main(file: str,
 
 		if deploy:
 			es = Search(host='http://localhost:9200',
-						name='catalogue_embeddings',
+						name=index_name,
 						)
 			es.reindex_from_df(data_with_embedding)
 
@@ -56,4 +57,6 @@ if __name__ == '__main__':
 	main(file='athleta_sample.ndjson',
 		 features=parse_features,
 		 embedding_features=embed,
-		 deploy=False)
+		 index_name='catalogue_embeddings',
+		 deploy=False,
+		 overwrite=False)

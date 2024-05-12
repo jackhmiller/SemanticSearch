@@ -1,22 +1,22 @@
-from preprocessing import CataloguePreprocessing
-from embeddings import EmbeddingModel
 from elastic import Search
-from dotenv import load_dotenv
-from data_utils import DataManager
 
 
-def main():
+
+def main(index_name: str,
+		 reindex: bool = False):
 
 	es = Search(host='http://localhost:9200',
-				name='catalogue_embeddings',
-				data_loader=data_manager)
+				name=index_name,
+				)
 
-	es.reindex()
+	if reindex:
+		es.reindex_from_gcs()
+
 
 	results = {}
 	test_sentences = ["Womens sports bra black"]
 	for sentence in test_sentences:
-		response = es.search(sentence)
+		response = es.knn_search(sentence)
 		hit_dict ={}
 		for hit in response["hits"]["hits"]:
 			hit_dict[hit["_id"]] = {'score': hit["_score"],
@@ -25,6 +25,5 @@ def main():
 
 
 if __name__ == '__main__':
-	main(file='athleta_sample.ndjson',
-		 features=parse_features,
-		 embedding_features=embed)
+	main(index_name='catalogue_embeddings',
+		 reindex=False)

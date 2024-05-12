@@ -29,7 +29,7 @@ def handle_search():
     else:
         search_query = {"must": {"match_all": {}}}
 
-    results = es.search()
+    results = es.knn_search()
     return render_template(
         "index.html",
         results=results["hits"]["hits"],
