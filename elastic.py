@@ -73,7 +73,7 @@ class Search:
 							"num_candidates": 50,
 							# **filters,
 						},
-						'size':5
+						'size':10
 		}
 		return self.es.search(index=self.index_name,
 							  **search_kwargs)

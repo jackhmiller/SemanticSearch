@@ -14,11 +14,20 @@ def parse_catalogue(raw_catalogue):
 				item_dict['style'] = item_iter['styleDescription'][0]['value']
 
 				# Colors
+				# Price
 				try:
 					colors = []
+					prices = []
+					price_types = []
 					for i in item_iter['customerChoice']:
 						color = i['searchColor']['id']
 						colors.append(color)
+
+						#todo is that different colors can have different prices
+						# reg_price = i['price']['regularPrice']
+						# curr_price = i['price']['currentPrice']
+						# price_type = i['price']['priceType']
+
 					item_dict["colors"] = list_to_string(colors)
 				except KeyError:
 					item_dict["colors"] = None
@@ -28,7 +37,7 @@ def parse_catalogue(raw_catalogue):
 					fabrics = []
 					for i in item_iter['fabricCopy']['bullets']:
 						if len(i['bulletContent']) > 0:
-							fabric = i['bulletContent'][0]['value'] + "."
+							fabric = i['bulletContent'][0]['value'] + " "
 							fabrics.append(fabric)
 					if len(fabrics) > 0:
 						item_dict["fabrics"] = list_to_string(fabrics)
@@ -42,7 +51,7 @@ def parse_catalogue(raw_catalogue):
 					fits = []
 					for i in item_iter['fitAndSizingCopyBullets']:
 						if len(i['bulletContent']) > 0:
-							fit = i['bulletContent'][0]['value'] + "."
+							fit = i['bulletContent'][0]['value'] + " "
 							fits.append(fit)
 					if len(fits) > 0:
 						item_dict["fits"] = list_to_string(fits)
@@ -69,7 +78,7 @@ def parse_catalogue(raw_catalogue):
 			overviews = []
 			for i in item_iter['overviewCopy']['bullets']:
 				if len(i['bulletContent']) > 0:
-					overview = i['bulletContent'][0]['value'] + "."
+					overview = i['bulletContent'][0]['value'] + " "
 					overviews.append(overview)
 			if len(overviews) > 0:
 				item_dict["overviews"] = list_to_string(overviews)

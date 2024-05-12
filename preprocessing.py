@@ -1,18 +1,13 @@
 import json
-import pprint
-import os
 import re
 import pandas as pd
 import string
 import nltk.corpus
 nltk.download('stopwords')
 from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer
-from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-import warnings
-from parser import parse_catalogue
+from data_utils.parser import parse_catalogue
 
 
 PATH_OUT = "./data/cleaned_search_data.parquet"
@@ -68,26 +63,14 @@ class TextPreprocessor:
 
 
 class CataloguePreprocessing:
-	def __init__(self, data_path, features, save_to_file=False):
-		self.file_path = data_path
+	def __init__(self, features, data):
 		self.features = features
-		self.save_to_file = save_to_file
-		self.raw_catalogue = None
+		self.raw_catalogue = data
 		self.parsed_catalogue = None
 
 	def run_preprocessing(self):
-		self.load_data()
 		self.get_parse_catalogue()
 		self.clean_catalogue_text()
-
-	def load_data(self):
-		with open(self.file_path, 'r', encoding='utf-8') as file:
-			raw_catalogue = []
-			for line in file:
-				data = json.loads(line)
-				raw_catalogue.append(data)
-
-		self.raw_catalogue = raw_catalogue
 
 	def get_parse_catalogue(self):
 		self.parsed_catalogue = parse_catalogue(self.raw_catalogue)
@@ -100,12 +83,7 @@ class CataloguePreprocessing:
 		for col in self.features:
 			df_clean[col] = df[col].apply(TextPreprocessor.preprocess)
 
-		if self.save_to_file:
-			print("saving")
-			df_clean.to_parquet(PATH_OUT,
-								index=True)
-		else:
-			return df_clean
+		return df_clean
 
 	def enrich_text(self, feature):
 		#todo

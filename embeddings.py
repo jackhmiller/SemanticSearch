@@ -3,10 +3,9 @@ import torch
 import pandas as pd
 from typing import Union, List
 from sentence_transformers import SentenceTransformer
+import os
 
 
-MODEL = 'sentence-transformers/all-mpnet-base-v2'
-TOKENIZER = 'sentence-transformers/all-mpnet-base-v2'
 DATA_IN_PATH = "./data/cleaned_search_data.parquet"
 DATA_OUT_PATH = "./data/data_with_embeddings.parquet"
 
@@ -14,12 +13,12 @@ DATA_OUT_PATH = "./data/data_with_embeddings.parquet"
 class EmbeddingModel:
 	def __init__(self,
 				 features: Union[str, List[str]] = None,
-				 model_name: str = MODEL,
+				 model_name: str = os.getenv('MODEL'),
 				 max_length: int = 128,
 				 save_model=False,
 				 inference=False,
 				 ):
-		self.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER)
+		self.tokenizer = AutoTokenizer.from_pretrained(os.getenv('TOKEINZER'))
 		self.model_name = model_name
 		self.model = AutoModel.from_pretrained(model_name)
 		self.max_length = max_length
