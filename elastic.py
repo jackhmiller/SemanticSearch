@@ -5,8 +5,7 @@ from pprint import pprint
 import pandas as pd
 from embeddings import EmbeddingModel
 
-PATH = "./data/data_with_embeddings.parquet"
-
+# PATH = "./data/data_with_embeddings.parquet"
 
 def load_docs(path: str) -> pd.DataFrame:
 	df = pd.read_parquet(path)
@@ -14,8 +13,9 @@ def load_docs(path: str) -> pd.DataFrame:
 
 
 class Search:
-	def __init__(self, host, name: str):
+	def __init__(self, host, data_loader, name: str):
 		self.es = Elasticsearch(host)
+		self.data_loader = data_loader
 		self.index_name = name
 		self.model = EmbeddingModel(inference=True)
 
@@ -37,7 +37,8 @@ class Search:
 		self.es.indices.create(index=self.index_name)
 
 	def reindex(self):
-		df = load_docs(PATH)
+		# df = load_docs(PATH)
+		df = self.data_loader.read_hash('embed')
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 

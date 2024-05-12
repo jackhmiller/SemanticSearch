@@ -19,42 +19,31 @@ def main(file: str, features: list[str], embedding_features: list[str]):
 							   embed=embedding_features)
 
 	if data_manager.check_hash(phase='clean'):
-		data_manager.read_hash()
+		pass
 	else:
 		raw_catalogue = data_manager.read_raw_catalogue()
 		cleaned_data = CataloguePreprocessing(features=features,
 											  data=raw_catalogue
 											  ).run_preprocessing()
+		data_manager.save_parquet_to_gcs(df=cleaned_data,
+										 phase='clean')
 
+	if data_manager.check_hash(phase='embed'):
+		pass
+	else:
+		data = data_manager.read_hash('clean')
+		model = EmbeddingModel(features=embedding_features,
+							   inference=False,
+							   )
+		model.run_embedding_model(data=data)
+		data_manager.save_parquet_to_gcs(data,
+										 'embed')
 
-	model = EmbeddingModel(embedding_features,
-						   inference=False)
-	##### For debug - read from file or recieve data directly from preprocess
-	DATA_IN_PATH = "./data/cleaned_search_data.parquet"
-	#####
-	model.run_embedding_model(data_path=DATA_IN_PATH)
-
-	es = Search(host='http://localhost:9200',
-				name='catalogue_embeddings')
-
-	es.reindex()
-
-	########################## ONLINE
-
-	results = {}
-	test_sentences = ["Womens sports bra black"]
-	for sentence in test_sentences:
-		response = es.search(sentence)
-		hit_dict ={}
-		for hit in response["hits"]["hits"]:
-			hit_dict[hit["_id"]] = {'score': hit["_score"],
-									'url': hit["_source"]["_url"]}
-		results[sentence] = hit_dict
 
 
 if __name__ == '__main__':
-	parse_features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	embed = ['overview']
+	parse_features = ['url', 'style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
+	embed = ['overviews']
 	main(file='athleta_sample.ndjson',
 		 features=parse_features,
 		 embedding_features=embed)

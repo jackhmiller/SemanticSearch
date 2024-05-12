@@ -68,9 +68,10 @@ class CataloguePreprocessing:
 		self.raw_catalogue = data
 		self.parsed_catalogue = None
 
-	def run_preprocessing(self):
+	def run_preprocessing(self) -> pd.DataFrame:
 		self.get_parse_catalogue()
-		self.clean_catalogue_text()
+		df = self.clean_catalogue_text()
+		return df
 
 	def get_parse_catalogue(self):
 		self.parsed_catalogue = parse_catalogue(self.raw_catalogue)

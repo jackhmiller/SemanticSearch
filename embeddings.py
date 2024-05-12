@@ -4,11 +4,10 @@ import pandas as pd
 from typing import Union, List
 from sentence_transformers import SentenceTransformer
 import os
+import itertools
 
-
-DATA_IN_PATH = "./data/cleaned_search_data.parquet"
-DATA_OUT_PATH = "./data/data_with_embeddings.parquet"
-
+TOKENIZER = AutoTokenizer.from_pretrained('sentence-transformers/all-mpnet-base-v2')
+MODEL = AutoModel.from_pretrained('sentence-transformers/all-mpnet-base-v2')
 
 class EmbeddingModel:
 	def __init__(self,
@@ -18,9 +17,9 @@ class EmbeddingModel:
 				 save_model=False,
 				 inference=False,
 				 ):
-		self.tokenizer = AutoTokenizer.from_pretrained(os.getenv('TOKEINZER'))
+		self.tokenizer = TOKENIZER
 		self.model_name = model_name
-		self.model = AutoModel.from_pretrained(model_name)
+		self.model = MODEL
 		self.max_length = max_length
 		self.features = features
 		self.save_model = save_model
@@ -31,18 +30,17 @@ class EmbeddingModel:
 
 
 	def run_embedding_model(self,
-							inference_sample: str = None,
-							data_path: str = None) -> Union[List, None]:
+							data: pd.DataFrame = None,
+							inference_sample: str = None):
 		if self.inference:
 			return self.create_embeddings(inference_sample)[0]
 		else:
-			data = pd.read_parquet(data_path)
+
 			print("Starting to compute embeddings")
-			sentences = data[features].to_list()
+			sentences = self.convert_to_sentences(data)
 			embeddings = self.create_embeddings(sentences)
 			data['embeddings'] = embeddings
-			data.to_parquet(DATA_OUT_PATH)
-			print("Done saving embeddings")
+			return data
 
 	def load_model(self):
 		loaded_model = SentenceTransformer('sentence_transformer_model')
@@ -51,6 +49,16 @@ class EmbeddingModel:
 	def save_model(self, model):
 		model.save(self.model_name)
 		pass
+
+	def convert_to_sentences(self, data: pd.DataFrame) ->list:
+		if len(self.features) > 1:
+			sentence_pairs = data[self.features].values.tolist()
+			sentences = [' '.join(i) for i in sentence_pairs]
+		else:
+			sentences = data[self.features].values.tolist()
+			sentences = list(itertools.chain.from_iterable(sentences))
+
+		return sentences
 
 	def create_embeddings(self, sentences):
 		encoded_input = self.tokenizer(sentences,
@@ -82,4 +90,4 @@ class EmbeddingModel:
 if __name__ == "__main__":
 	features = "overviews"
 	model = EmbeddingModel(features, inference=False)
-	model.run_embedding_model(data_path=DATA_IN_PATH)
+	model.run_embedding_model()

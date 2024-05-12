@@ -1,15 +1,16 @@
+import pandas as pd
 from google.cloud import storage
 import json
 import os
-import hashlib
-
+import io
+import pyarrow.parquet as pq
 
 class DataManager:
 	def __init__(self, file: str, features: list[str], embed: list[str]):
 		self.raw_file_name = file
 		# self.feature_hash = hashlib.sha1(" ".join(features).encode()).hexdigest()
-		self.feature_hash = "_".join(features) + '_.parquet'
-		self.embedding_hash = self.feature_hash + '_' + f"encode_{'_'.join(embed)}"
+		self.feature_hash = "_".join(features) + '.parquet'
+		self.embedding_hash = "_".join(features) + '_' + f"encode_{'_'.join(embed)}" + '.parquet'
 		self.gcs = storage.Client()
 		self.bucket = self.gcs.bucket(os.getenv("BUCKET_NAME"))
 		self.raw_data_path = os.getenv("RAW_DATA_PATH")
@@ -32,10 +33,34 @@ class DataManager:
 	def check_hash(self, phase: str):
 		if phase == 'clean':
 			blob = self.bucket.blob(os.path.join(self.cleaned_data_path, self.feature_hash))
-			return blob.exists(), blob
+			return blob.exists()
 		if phase == 'embed':
 			blob = self.bucket.blob(os.path.join(self.embedding_data_path, self.embedding_hash))
-			return blob.exists(), blob
+			return blob.exists()
 
-	def read_hash(self):
-		pass
+	def read_hash(self, phase: str):
+		if phase == 'clean':
+			df = self.load_parquet_from_gcs(os.path.join(self.cleaned_data_path, self.feature_hash))
+			return df
+		if phase == 'embed':
+			df = self.load_parquet_from_gcs(os.path.join(self.embedding_data_path, self.embedding_hash))
+			return df
+
+	def load_parquet_from_gcs(self, blob_name: str) -> pd.DataFrame:
+		blob = self.bucket.blob(blob_name)
+		buffer = io.BytesIO()
+		blob.download_to_file(buffer)
+		buffer.seek(0)
+		table = pq.read_table(buffer)
+		df = table.to_pandas()
+		return df
+
+	def save_parquet_to_gcs(self, df, phase):
+		if phase == 'clean':
+			path = os.path.join(self.cleaned_data_path, self.feature_hash)
+			destination_uri = f'gs://{os.getenv("BUCKET_NAME")}/{path}'
+			df.to_parquet(destination_uri)
+		if phase == 'embed':
+			path = os.path.join(self.cleaned_data_path, self.embedding_hash)
+			destination_uri = f'gs://{os.getenv("BUCKET_NAME")}/{path}'
+			df.to_parquet(destination_uri)
