@@ -19,18 +19,17 @@ def main(file: str,
 	(4. Automate knn_search quality testing)
 	"""
 	load_dotenv()
-	data_manager = DataManager(file=file,
-							   features=features,
+	data_manager = DataManager(features=features,
 							   embed=embedding_features)
 
 	if (data_manager.check_hash(phase='clean')) & (not overwrite):
 		pass
 	else:
-		raw_catalogue = data_manager.read_raw_catalogue()
-		cleaned_data = CataloguePreprocessing(features=features,
-											  data=raw_catalogue
-											  ).run_preprocessing()
-		data_manager.save_parquet_to_gcs(df=cleaned_data,
+		preprocess = CataloguePreprocessing(file=file,
+											features=features,							   )
+		cleaned_data = preprocess.run_preprocessing()
+
+		data_manager.save_data(df=cleaned_data,
 										 phase='clean')
 
 	if (data_manager.check_hash(phase='embed')) & (not overwrite):
@@ -41,7 +40,7 @@ def main(file: str,
 							   inference=False,
 							   )
 		data_with_embedding = model.run_embedding_model(data=data)
-		data_manager.save_parquet_to_gcs(data_with_embedding,
+		data_manager.save_data(data_with_embedding,
 										 'embed')
 
 		if deploy:

@@ -8,9 +8,9 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from data_utils.parser import parse_catalogue
-
-
-PATH_OUT = "./data/cleaned_search_data.parquet"
+import numpy as np
+import os
+from google.cloud import storage
 
 
 class TextPreprocessor:
@@ -63,12 +63,17 @@ class TextPreprocessor:
 
 
 class CataloguePreprocessing:
-	def __init__(self, features, data):
+	def __init__(self, file: str, features: list):
+		self.raw_file_name = file
+		self.raw_data_path = os.getenv("RAW_DATA_PATH")
+		self.gcs = storage.Client()
+		self.bucket = self.gcs.bucket(os.getenv("BUCKET_NAME"))
 		self.features = features
-		self.raw_catalogue = data
+		self.raw_catalogue = None
 		self.parsed_catalogue = None
 
 	def run_preprocessing(self) -> pd.DataFrame:
+		self.read_raw_catalogue()
 		self.get_parse_catalogue()
 		df = self.clean_catalogue_text()
 		return df
@@ -76,12 +81,43 @@ class CataloguePreprocessing:
 	def get_parse_catalogue(self):
 		self.parsed_catalogue = parse_catalogue(self.raw_catalogue)
 
+	def read_raw_catalogue(self) -> list:
+		blob = self.bucket.blob(os.path.join(self.raw_data_path,
+										self.raw_file_name))
+
+		with blob.open("r", encoding='utf-8') as file:
+			catalogue = []
+			for line in file:
+				data = json.loads(line)
+				catalogue.append(data)
+
+		return catalogue
+
+	@staticmethod
+	def clean_price(prices: list) ->list:
+		cleaned_prices = []
+		for i in prices:
+			if i:
+				if not np.isnan(i).all():
+					p = list(set(i))
+					if len(p) > 1:
+						cleaned_prices.append([min(p), max(p)])
+					elif len(p) == 1:
+						cleaned_prices.append(p)
+				else:
+					cleaned_prices.append(None)
+			else:
+				cleaned_prices.append(None)
+
+		return cleaned_prices
+
 	def clean_catalogue_text(self):
 		df = pd.DataFrame(self.parsed_catalogue).T
-		df = df.astype(str)
 		df_clean = pd.DataFrame()
-		df_clean['url'] = df['url']
+		df_clean['current_price'] = self.clean_price(df['current_price'].to_list())
+		df_clean['url'] = df['url'].astype(str)
 		for col in self.features:
+			df[col] = df[col].astype(str)
 			df_clean[col] = df[col].apply(TextPreprocessor.preprocess)
 
 		return df_clean
@@ -93,7 +129,5 @@ class CataloguePreprocessing:
 
 if __name__ == "__main__":
 	features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	CataloguePreprocessing(data_path="data/athleta_sample.ndjson",
-						   features=features,
-						   save_to_file=True
+	CataloguePreprocessing(features=features
 						   ).run_preprocessing()

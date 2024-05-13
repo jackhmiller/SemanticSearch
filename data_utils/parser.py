@@ -1,6 +1,8 @@
 def list_to_string(lst):
 	return ', '.join(lst)
 
+def consolidate(lst: list):
+	return
 
 def parse_catalogue(raw_catalogue):
 	cleaned_catalogue = {}
@@ -17,20 +19,28 @@ def parse_catalogue(raw_catalogue):
 				# Price
 				try:
 					colors = []
-					prices = []
-					price_types = []
+					rprice = []
+					cprice = []
+					ptype = []
 					for i in item_iter['customerChoice']:
 						color = i['searchColor']['id']
 						colors.append(color)
-
-						#todo is that different colors can have different prices
-						# reg_price = i['price']['regularPrice']
-						# curr_price = i['price']['currentPrice']
-						# price_type = i['price']['priceType']
+						reg_price = i['price']['regularPrice']
+						cur_price = i['price']['currentPrice']
+						price_type = i['price']['priceType']
+						rprice.append(reg_price)
+						cprice.append(cur_price)
+						ptype.append(price_type)
 
 					item_dict["colors"] = list_to_string(colors)
+					item_dict["regular_price"] = rprice
+					item_dict["current_price"] = cprice
+					item_dict["price_type"] = ptype
 				except KeyError:
 					item_dict["colors"] = None
+					item_dict["regular_price"] = []
+					item_dict["current_price"] = []
+					item_dict["price_type"] = None
 
 				# Fabric
 				try:
