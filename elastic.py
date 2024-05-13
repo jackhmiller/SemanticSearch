@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-import json
+from data_utils.gcs import GCSContextManager
 from pprint import pprint
 import pandas as pd
 from embeddings import EmbeddingModel
@@ -36,9 +36,8 @@ class Search:
 		bulk(self.es, self.generate_docs(df))
 
 	def reindex_from_gcs(self):
-		gcs = storage.Client()
-		bucket = gcs.bucket(os.getenv("BUCKET_NAME"))
-		df = self.data_loader.read_hash('embed') #todo preplace deployed embeddings
+		with GCSContextManager(os.getenv("BUCKET_NAME")) as gcs:
+			df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 
