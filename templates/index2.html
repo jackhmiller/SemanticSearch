@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search App</title>
+</head>
+<body>
+    <h1>Search App</h1>
+    <input type="text" id="searchInput" placeholder="Search...">
+    <button onclick="search()">Search</button>
+    <ul id="results"></ul>
+
+    <script>
+        async function search() {
+            const query = document.getElementById("searchInput").value;
+            const response = await fetch(`/search/?query=${query}`);
+            const data = await response.json();
+            const resultsElement = document.getElementById("results");
+            resultsElement.innerHTML = ""; // Clear previous results
+            data.forEach(item => {
+                const li = document.createElement("li");
+                li.textContent = item._source.content; // Assuming content is the field you want to display
+                resultsElement.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

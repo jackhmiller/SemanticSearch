@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from gcs import GCSContextManager
+from data_utils.gcs import GCSContextManager
 
 class DataManager:
 	def __init__(self,

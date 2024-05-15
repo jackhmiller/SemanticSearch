@@ -27,7 +27,7 @@ def main(file: str,
 	3. Load embeddings to elastic
 	(4. Automate knn_search quality testing)
 	"""
-	load_dotenv()
+	load_dotenv(find_dotenv())
 	tracker = Tracker(model=embedding_model,
 					  embedding_features=embedding_features)
 

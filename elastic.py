@@ -36,7 +36,7 @@ class Search:
 
 	def reindex_from_gcs(self):
 		with GCSContextManager() as gcs:
-			df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
+			df = gcs.load_parquet_from_gcs(blob_name='None') #todo preplace deployed embeddings
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 
