@@ -4,7 +4,6 @@ from data_utils.gcs import GCSContextManager
 from pprint import pprint
 import pandas as pd
 from embeddings import EmbeddingModel
-from google.cloud import storage
 import os
 
 
@@ -36,7 +35,7 @@ class Search:
 		bulk(self.es, self.generate_docs(df))
 
 	def reindex_from_gcs(self):
-		with GCSContextManager(os.getenv("BUCKET_NAME")) as gcs:
+		with GCSContextManager() as gcs:
 			df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))

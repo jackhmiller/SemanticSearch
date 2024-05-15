@@ -63,12 +63,12 @@ class TextPreprocessor:
 
 
 class CataloguePreprocessing:
-	def __init__(self, file: str, features: list):
+	def __init__(self, file: str):
 		self.raw_file_name = file
 		self.raw_data_path = os.getenv("RAW_DATA_PATH")
 		self.gcs = storage.Client()
 		self.bucket = self.gcs.bucket(os.getenv("BUCKET_NAME"))
-		self.features = features
+		self.text_features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
 		self.raw_catalogue = None
 		self.parsed_catalogue = None
 
@@ -116,7 +116,7 @@ class CataloguePreprocessing:
 		df_clean = pd.DataFrame()
 		df_clean['current_price'] = self.clean_price(df['current_price'].to_list())
 		df_clean['url'] = df['url'].astype(str)
-		for col in self.features:
+		for col in self.text_features:
 			df[col] = df[col].astype(str)
 			df_clean[col] = df[col].apply(TextPreprocessor.preprocess)
 
@@ -128,6 +128,4 @@ class CataloguePreprocessing:
 
 
 if __name__ == "__main__":
-	features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-	CataloguePreprocessing(features=features
-						   ).run_preprocessing()
+	pass

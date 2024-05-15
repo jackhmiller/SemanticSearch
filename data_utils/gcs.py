@@ -2,13 +2,13 @@ from google.cloud import storage
 import io
 import pyarrow.parquet as pq
 import pandas as pd
-
+import os
 
 class GCSContextManager:
-    def __init__(self, bucket_name):
-        self.bucket_name = bucket_name
+    def __init__(self):
+        self.bucket_name = os.getenv("BUCKET_NAME")
         self.client = storage.Client()
-        self.bucket = self.client.bucket(bucket_name)
+        self.bucket = self.client.bucket(self.bucket_name)
 
     def check_blob_exits(self, path:str) -> bool:
         blob = self.bucket.blob(path)

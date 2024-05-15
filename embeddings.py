@@ -1,25 +1,25 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
 import pandas as pd
-from typing import Union, List
+from typing import List
 from sentence_transformers import SentenceTransformer
 import os
 import itertools
 
-TOKENIZER = AutoTokenizer.from_pretrained('sentence-transformers/all-mpnet-base-v2')
-MODEL = AutoModel.from_pretrained('sentence-transformers/all-mpnet-base-v2')
 
 class EmbeddingModel:
 	def __init__(self,
-				 features: Union[str, List[str]] = None,
-				 model_name: str = os.getenv('MODEL'),
+				 model_name: str='sentence-transformers/all-mpnet-base-v2',
+				 tokenizer: str='sentence-transformers/all-mpnet-base-v2',
 				 max_length: int = 128,
-				 save_model=False,
-				 inference=False,
+				 features: List[str] = None,
+				 pretrained: bool = True,
+				 save_model:bool = False,
+				 inference:bool = False,
 				 ):
-		self.tokenizer = TOKENIZER
-		self.model_name = model_name
-		self.model = MODEL
+		self.pretrained = pretrained
+		self.tokenizer = self.load_tokenizer(tokenizer)
+		self.model = self.load_model(model_name)
 		self.max_length = max_length
 		self.features = features
 		self.save_model = save_model
@@ -42,12 +42,17 @@ class EmbeddingModel:
 			data['embeddings'] = embeddings
 			return data
 
-	def load_model(self):
-		loaded_model = SentenceTransformer('sentence_transformer_model')
-		pass
+	def load_model(self, model: str):
+		if self.pretrained:
+			loaded_model = AutoModel.from_pretrained(model)
+			return loaded_model
+
+	def load_tokenizer(self, model: str):
+		if self.pretrained:
+			loaded_model = AutoTokenizer.from_pretrained(model)
+			return loaded_model
 
 	def save_model(self, model):
-		model.save(self.model_name)
 		pass
 
 	def convert_to_sentences(self, data: pd.DataFrame) ->list:
@@ -88,6 +93,6 @@ class EmbeddingModel:
 
 
 if __name__ == "__main__":
-	features = "overviews"
+	features = ["overviews"]
 	model = EmbeddingModel(features, inference=False)
 	model.run_embedding_model()
