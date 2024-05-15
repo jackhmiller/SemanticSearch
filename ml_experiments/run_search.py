@@ -26,4 +26,4 @@ def main(index_name: str,
 
 if __name__ == '__main__':
 	main(index_name='catalogue_embeddings',
-		 reindex=False)
+		 reindex=True)

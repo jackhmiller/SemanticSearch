@@ -1,6 +1,6 @@
 from preprocessing import CataloguePreprocessing
 from embeddings import EmbeddingModel
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from data_utils import DataManager
 from elastic import Search
 import os

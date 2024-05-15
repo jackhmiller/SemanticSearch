@@ -22,6 +22,9 @@ class Search:
 	def index_mapping(self):
 		return self.es.indices.get_mapping(index=self.index_name)
 
+	def retrieve_document(self, id):
+		return self.es.get(index=self.index_name, id=id)
+
 	def get_embedding(self, text):
 		return self.model.run_embedding_model(inference_sample=text)
 
@@ -35,8 +38,9 @@ class Search:
 		bulk(self.es, self.generate_docs(df))
 
 	def reindex_from_gcs(self):
-		with GCSContextManager() as gcs:
-			df = gcs.load_parquet_from_gcs(blob_name='None') #todo preplace deployed embeddings
+		# with GCSContextManager() as gcs:
+		# 	df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
+		df = pd.read_parquet("gs://forecasting-algo-dev/embedding_data/style_colors_fabrics_fits_tags_hierarchys_overviews_encode_overviews.parquet")
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 

@@ -1,33 +1,44 @@
-from fastapi import FastAPI, HTTPException
 from elastic import Search
-from starlette.templating import Jinja2Templates
+from flask import Flask, render_template, request
 import uvicorn
 
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+app = Flask(__name__)
 
 es = Search(host='http://localhost:9200',
             name='catalogue_embeddings',
             )
 
-# @app.get("/")
-# def index():
-#     return templates.TemplateResponse("index.html")
+@app.get("/")
+def index():
+    return render_template("index.html")
 
 
 @app.post("/")
-async def search(query: str):
-    response = es.knn_search(query)
-    if response['hits']['total']['value'] == 0:
-        raise HTTPException(status_code=404, detail="No results found")
-    return templates.TemplateResponse(name="index.html",
-                                      context={
-                                          "results":response["hits"]["hits"],
-                                          "query":query,
-                                          "total":response["hits"]["total"]["value"]
-                                      })
+def handle_search():
+    query = request.form.get("query", "")
+    from_ = request.form.get("from_", type=int, default=0)
+    result = es.knn_search(query)
 
+    return render_template(
+        "index.html",
+        results=result["hits"]["hits"],
+        query=query,
+        from_=from_,
+        total=result["hits"]["total"]["value"],
+        # aggs=aggs,
+    )
+
+
+@app.get("/document/<id>")
+def get_document(id):
+    document = es.retrieve_document(id)
+    # title = document["_source"]["name"]
+    # paragraphs = document["_source"]["_overview"].split("\n") #todo
+    return render_template("document.html",
+                           # title=title,
+                           # paragraphs=paragraphs
+                           )
 
 
 if __name__ == "__main__":
-    uvicorn.run('main:app', host="0.0.0.0", port=8000)
+    app.run(host='0.0.0.0', port=5001)
