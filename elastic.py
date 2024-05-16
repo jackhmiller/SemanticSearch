@@ -49,12 +49,12 @@ class Search:
 			yield {
 				'_index': self.index_name,
 				'_id': idx,
-				'_name': row['name'], #todo
 				'_embedding': row['embeddings'],
 				'_url': row['url'],
-				'_overview': row['overview'],
+				'_overview': row['overviews'],
 				'_tags': row['tags'],
-				'_price': row['price']
+				'_price': row['current_price'],
+				'_price_status': row['price_status']
 			}
 
 	def insert_document(self, document):
