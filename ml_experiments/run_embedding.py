@@ -50,7 +50,7 @@ def main(file: str,
 	if (embed_data_manager.check_hash()) & (not overwrite):
 		pass
 	else:
-		data = embed_data_manager.read_hash()
+		data = clean_data_manager.read_hash()
 		model = EmbeddingModel(model_name=embedding_model,
 							   tokenizer=tokenizer,
 							   features=embedding_features,

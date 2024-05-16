@@ -43,12 +43,14 @@
                 </div>
                 {% for result in results %}
                     <p>
-                        {{ from_ + loop.index }}. <b><a href="{{ url_for('get_document', id=result._id) }}">{{ result._source.name }}</a></b>
+                        {{ from_ + loop.index }}. <b><a href="{{ url_for('get_document', id=result._id) }}">{{ result._source._name }}</a></b>
                         <br>
-                        {{ result._source.summary }}
+                        {{ result._source._overview }}
                         <br>
                         <small>
-                            Category: {{ result._source.category }}.
+                            Tags: {{ result._source._tags }}.
+                            URL: {{ result._source._url }}.
+                            Price: {{ result._source._price }}.
                             Last updated: {{ result._source.updated_at | default(result._source.created_on) }}.
                             {% if result._score %}<i>(Score: {{ result._score }})</i>{% endif %}
                         </small>

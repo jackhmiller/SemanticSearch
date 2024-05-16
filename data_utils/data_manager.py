@@ -13,8 +13,8 @@ class DataManager:
 	def check_hash(self) -> bool:
 		name = os.path.join(self.path, self.hash)
 		with GCSContextManager() as gcs:
-			blob = gcs.check_blob_exits(name)
-		return blob.exists()
+			blob = gcs.check_blob_exists(name)
+		return blob
 
 	def read_hash(self) -> pd.DataFrame:
 		name = os.path.join(self.path, self.hash)

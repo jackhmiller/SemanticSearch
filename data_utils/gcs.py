@@ -10,7 +10,13 @@ class GCSContextManager:
         self.client = storage.Client()
         self.bucket = self.client.bucket(self.bucket_name)
 
-    def check_blob_exits(self, path:str) -> bool:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def check_blob_exists(self, path:str) -> bool:
         blob = self.bucket.blob(path)
         return blob.exists()
 

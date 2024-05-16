@@ -40,7 +40,7 @@ class Search:
 	def reindex_from_gcs(self):
 		# with GCSContextManager() as gcs:
 		# 	df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
-		df = pd.read_parquet("gs://forecasting-algo-dev/embedding_data/style_colors_fabrics_fits_tags_hierarchys_overviews_encode_overviews.parquet")
+		df = pd.read_parquet("gs://forecasting-algo-dev/embedding_data/all-mpnet-base-v2_overviews.parquet")
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 
@@ -49,8 +49,12 @@ class Search:
 			yield {
 				'_index': self.index_name,
 				'_id': idx,
+				'_name': row['name'], #todo
 				'_embedding': row['embeddings'],
-				'_url': row['url']
+				'_url': row['url'],
+				'_overview': row['overview'],
+				'_tags': row['tags'],
+				'_price': row['price']
 			}
 
 	def insert_document(self, document):

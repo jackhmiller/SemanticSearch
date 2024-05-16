@@ -69,17 +69,17 @@ class CataloguePreprocessing:
 		self.gcs = storage.Client()
 		self.bucket = self.gcs.bucket(os.getenv("BUCKET_NAME"))
 		self.text_features = ['style', 'colors', 'fabrics', 'fits', 'tags', 'hierarchys', 'overviews']
-		self.raw_catalogue = None
-		self.parsed_catalogue = None
 
 	def run_preprocessing(self) -> pd.DataFrame:
-		self.read_raw_catalogue()
-		self.get_parse_catalogue()
-		df = self.clean_catalogue_text()
+		catalogue = self.read_raw_catalogue()
+		parsed_catalogue = self.get_parse_catalogue(catalogue)
+		df = self.clean_catalogue_text(parsed_catalogue)
 		return df
 
-	def get_parse_catalogue(self):
-		self.parsed_catalogue = parse_catalogue(self.raw_catalogue)
+	@staticmethod
+	def get_parse_catalogue(catalogue):
+		parsed_catalogue = parse_catalogue(catalogue)
+		return parsed_catalogue
 
 	def read_raw_catalogue(self) -> list:
 		blob = self.bucket.blob(os.path.join(self.raw_data_path,
@@ -94,31 +94,47 @@ class CataloguePreprocessing:
 		return catalogue
 
 	@staticmethod
+	def clean_price_type(prices: list) -> list:
+		cleaned_prices_status = []
+		for i in prices:
+			if type(i) == list:
+				if len(i) == 1:
+					cleaned_prices_status.append(i[0].lower())
+				elif len(i) > 1:
+					cleaned_prices_status.append('markdown')
+				else:
+					cleaned_prices_status.append(None)
+			else:
+				cleaned_prices_status.append(None)
+		return cleaned_prices_status
+
+	@staticmethod
 	def clean_price(prices: list) ->list:
 		cleaned_prices = []
 		for i in prices:
 			if i:
-				if not np.isnan(i).all():
-					p = list(set(i))
-					if len(p) > 1:
-						cleaned_prices.append([min(p), max(p)])
-					elif len(p) == 1:
-						cleaned_prices.append(p)
+				if not np.isnan(i).any():
+					if len(i) > 1:
+						cleaned_prices.append([min(i), max(i)])
+					elif len(i) == 1:
+						cleaned_prices.append(i)
 				else:
-					cleaned_prices.append(None)
+					cleaned_prices.append([])
 			else:
-				cleaned_prices.append(None)
+				cleaned_prices.append([])
 
-		return cleaned_prices
+		return sorted(cleaned_prices)
 
-	def clean_catalogue_text(self):
-		df = pd.DataFrame(self.parsed_catalogue).T
+	def clean_catalogue_text(self, catalogue):
+		df = pd.DataFrame(catalogue).T
 		df_clean = pd.DataFrame()
 		df_clean['current_price'] = self.clean_price(df['current_price'].to_list())
-		df_clean['url'] = df['url'].astype(str)
+		df_clean['price_status'] = self.clean_price_type(df['price_type'].to_list())
+		df_clean['url'] = df['url'].astype(str).values
 		for col in self.text_features:
 			df[col] = df[col].astype(str)
-			df_clean[col] = df[col].apply(TextPreprocessor.preprocess)
+			df[col] = df[col].apply(TextPreprocessor.preprocess)
+			df_clean[col] = df[col].values
 
 		return df_clean
 

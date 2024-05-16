@@ -33,14 +33,14 @@ def parse_catalogue(raw_catalogue):
 						ptype.append(price_type)
 
 					item_dict["colors"] = list_to_string(colors)
-					item_dict["regular_price"] = rprice
-					item_dict["current_price"] = cprice
-					item_dict["price_type"] = ptype
+					item_dict["regular_price"] = list(set(rprice))
+					item_dict["current_price"] = list(set(cprice))
+					item_dict["price_type"] = list(set(ptype))
 				except KeyError:
 					item_dict["colors"] = None
 					item_dict["regular_price"] = []
 					item_dict["current_price"] = []
-					item_dict["price_type"] = None
+					item_dict["price_type"] = []
 
 				# Fabric
 				try:

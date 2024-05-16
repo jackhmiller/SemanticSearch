@@ -8,6 +8,12 @@ class GBQContextManager:
         self.client = bigquery.Client()
         self.table_id = os.getenv("RUN_TABLE_ID")
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
     def create_runs_table(self) -> None:
         schema = [
             bigquery.SchemaField("run_id", "STRING", mode="REQUIRED"),
