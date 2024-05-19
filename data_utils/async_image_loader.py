@@ -36,8 +36,8 @@ async def process_images(urls, bucket_name):
 
 if __name__ == "__main__":
 
-	bucket_name =
-	df = pd.read_parquet()
+	bucket_name = "forecasting-algo-dev"
+	df = pd.read_parquet("gs://forecasting-algo-dev/cleaned_data/cleaned_data.parquet")
 
 	tuples = list(zip(df.index.tolist(), df.url.values.tolist()))
 	final = [x for x in tuples if x[1] is not None]

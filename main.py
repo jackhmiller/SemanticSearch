@@ -1,6 +1,5 @@
 from elastic import Search
 from flask import Flask, render_template, request
-import uvicorn
 
 app = Flask(__name__)
 
@@ -32,11 +31,11 @@ def handle_search():
 @app.get("/document/<id>")
 def get_document(id):
     document = es.retrieve_document(id)
-    # title = document["_source"]["name"]
-    # paragraphs = document["_source"]["_overview"].split("\n") #todo
+    title = document["_source"]["_name"]
+    paragraphs = document["_source"]["_paragraph"]
     return render_template("document.html",
-                           # title=title,
-                           # paragraphs=paragraphs
+                           title=title,
+                           paragraphs=paragraphs
                            )
 
 

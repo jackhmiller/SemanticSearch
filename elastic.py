@@ -54,7 +54,9 @@ class Search:
 				'_overview': row['overviews'],
 				'_tags': row['tags'],
 				'_price': row['current_price'],
-				'_price_status': row['price_status']
+				'_price_status': row['price_status'],
+				'_name': row['product_title'],
+				'_paragraph': row['paragraph'] #unclean overviews
 			}
 
 	def insert_document(self, document):

@@ -131,6 +131,8 @@ class CataloguePreprocessing:
 		df_clean['current_price'] = self.clean_price(df['current_price'].to_list())
 		df_clean['price_status'] = self.clean_price_type(df['price_type'].to_list())
 		df_clean['url'] = df['url'].astype(str).values
+		df_clean['product_title'] = df['style'].astype(str).values
+		df_clean['paragraph'] = df['overviews'].astype(str).values
 		for col in self.text_features:
 			df[col] = df[col].astype(str)
 			df[col] = df[col].apply(TextPreprocessor.preprocess)

@@ -98,7 +98,11 @@ def parse_catalogue(raw_catalogue):
 			# URL
 			try:
 				if item_iter["customerChoice"]:
-					item_dict["url"] = item_iter["customerChoice"][0]['fullProductPageURL']
+					for i in item_iter["customerChoice"]:
+						item_dict["product_page"] = i['fullProductPageURL']
+						for dict in i['media']:
+							if dict['contentType'] == 'VI_ONESITE':
+								item_dict["image_url"] = dict['fullContentPath']
 				else:
 					item_dict["url"] = None
 			except KeyError:
