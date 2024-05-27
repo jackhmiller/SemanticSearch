@@ -1,5 +1,5 @@
 from elastic import Search
-
+import json
 
 
 def main(index_name: str,
@@ -14,16 +14,17 @@ def main(index_name: str,
 
 
 	results = {}
-	test_sentences = ["Womens sports bra black"]
+	test_sentences = ["red dress", 'shorts', 'linen', 'linen pants', 'brooklyn ankle pants']
 	for sentence in test_sentences:
 		response = es.knn_search(sentence)
 		hit_dict ={}
 		for hit in response["hits"]["hits"]:
-			hit_dict[hit["_id"]] = {'score': hit["_score"],
-									'url': hit["_source"]["_url"]}
+			hit_dict[hit["_id"]] = {'score': hit["_score"]}
 		results[sentence] = hit_dict
+	with open("ran_test.json", 'w') as json_file:
+		json.dump(results, json_file)
 
 
 if __name__ == '__main__':
 	main(index_name='catalogue_embeddings',
-		 reindex=True)
+		 reindex=False)

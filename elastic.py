@@ -66,7 +66,7 @@ class Search:
 	def insert_documents(self, documents: pd.DataFrame):
 		return bulk(self.es, self.generate_docs(documents))
 
-	def knn_search(self, text):
+	def knn_search(self, text, **kwargs):
 		search_kwargs = {'query':
 								{
 									"match": {
@@ -80,9 +80,13 @@ class Search:
 							"query_vector": self.get_embedding(text),
 							"k": 10,
 							"num_candidates": 50,
-							# **filters,
+							**kwargs,
+							 # "filter": [
+								#  {"range": {"date":}},
+								#  {"match": {"_tags":}}
+							 # ]
 						},
-						'size':10
+						'size':20
 		}
 		return self.es.search(index=self.index_name,
 							  **search_kwargs)

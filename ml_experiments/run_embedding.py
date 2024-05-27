@@ -77,5 +77,5 @@ if __name__ == '__main__':
 		 embedding_model='sentence-transformers/all-mpnet-base-v2',
 		 tokenizer='sentence-transformers/all-mpnet-base-v2',
 		 index_name='catalogue_embeddings',
-		 deploy=False,
+		 deploy=True,
 		 overwrite=False)
