@@ -50,7 +50,7 @@ class Search:
 				'_index': self.index_name,
 				'_id': idx,
 				'_embedding': row['embeddings'],
-				'_url': row['url'],
+				'_url': row['image_url'],
 				'_overview': row['overviews'],
 				'_tags': row['tags'],
 				'_price': row['current_price'],
@@ -66,7 +66,7 @@ class Search:
 	def insert_documents(self, documents: pd.DataFrame):
 		return bulk(self.es, self.generate_docs(documents))
 
-	def knn_search(self, text, **kwargs):
+	def knn_search(self, text, filters=None):
 		search_kwargs = {'query':
 								{
 									"match": {
@@ -80,7 +80,7 @@ class Search:
 							"query_vector": self.get_embedding(text),
 							"k": 10,
 							"num_candidates": 50,
-							**kwargs,
+
 							 # "filter": [
 								#  {"range": {"date":}},
 								#  {"match": {"_tags":}}

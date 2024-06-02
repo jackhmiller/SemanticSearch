@@ -50,7 +50,7 @@
                         <small>
                             Tags: {{ result._source._tags }}
                         <br>
-                            URL: {{ result._source._url }}
+                            <img src="{{ result._source._url }}" />
                         <br>
                             Price: {{ result._source._price }}
                             {% if result._score %}<i>(Similarity Score: {{ result._score }})</i>{% endif %}

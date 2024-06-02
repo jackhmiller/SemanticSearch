@@ -78,4 +78,4 @@ if __name__ == '__main__':
 		 tokenizer='sentence-transformers/all-mpnet-base-v2',
 		 index_name='catalogue_embeddings',
 		 deploy=True,
-		 overwrite=False)
+		 overwrite=True)

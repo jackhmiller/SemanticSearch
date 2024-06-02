@@ -11,7 +11,7 @@ es = Search(host='http://localhost:9200',
 def extract_filters(query):
     filters = []
 
-    filter_regex = r'tags: ([^\s]+)\s*'
+    filter_regex = r': ([^\s]+)\s*'
     m = re.search(filter_regex, query)
     if m:
         filters.append({
@@ -35,7 +35,7 @@ def handle_search():
     raw_query = request.form.get("query", "")
     filters, parsed_query = extract_filters(raw_query)
     from_ = request.form.get("from_", type=int, default=0)
-    result = es.knn_search(parsed_query, filters)
+    result = es.knn_search(parsed_query)
 
     return render_template(
         "index.html",

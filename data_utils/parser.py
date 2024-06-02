@@ -104,9 +104,9 @@ def parse_catalogue(raw_catalogue):
 							if dict['contentType'] == 'VI_ONESITE':
 								item_dict["image_url"] = dict['fullContentPath']
 				else:
-					item_dict["url"] = None
+					item_dict["image_url"] = None
 			except KeyError:
-				item_dict["url"] = None
+				item_dict["image_url"] = None
 
 			try:
 				item_dict["avg_rating"] = item_iter['rating']['averageRating']
