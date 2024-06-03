@@ -60,6 +60,7 @@ class Search:
 				'_id': idx,
 				'_embedding': row['embeddings'],
 				'_url': row['image_url'],
+				'_product_page': row['product_page'],
 				'_overview': row['overviews'],
 				'_tags': row['tags'],
 				'_price': row['current_price'],

@@ -96,11 +96,11 @@
                     {% for result in results %}
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">{{ from_ + loop.index }}. <a href="{{ url_for('get_document', id=result._id) }}">{{ result._source._name }}</a></h5>
+                                <h5 class="card-title">{{ from_ + loop.index }}. <a href="{{ result._source._product_page }}">{{ result._source._name }}</a></h5>
                                 <p class="card-text">{{ result._source._paragraph }}</p>
                                 <p class="card-text"><small class="text-muted">Tags: {{ result._source._tags }}</small></p>
                                 <p class="card-text"><small class="text-muted">Price: {{ result._source._price }}</small></p>
-                                <p class="card-text"><small class="text-muted">Price: {{ result._source._colors }}</small></p>
+                                <p class="card-text"><small class="text-muted">Color: {{ result._source._colors }}</small></p>
                                 {% if result._score %}
                                     <p class="card-text"><small class="text-muted">Similarity Score: {{ result._score }}</small></p>
                                 {% endif %}

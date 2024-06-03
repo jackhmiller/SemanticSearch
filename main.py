@@ -1,5 +1,5 @@
 from elastic import Search
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import re
 from dotenv import load_dotenv, find_dotenv
 
@@ -32,6 +32,13 @@ def extract_filters(query):
 @app.get("/")
 def index():
     return render_template("index.html")
+
+
+@app.post("/requests")
+def raw_search():
+    query = request.form.get("query", "")
+    result = es.knn_search(query)
+    return jsonify(result["hits"]["hits"])
 
 
 @app.post("/")

@@ -68,9 +68,9 @@ if __name__ == '__main__':
 	model_params = {
 		"file": 'athleta_sample.ndjson',
 		"embedding_features": embed,
-		"embedding_model": "rotem_model_v1.pkl",  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
+		"embedding_model_name": "rotem_model_v1.pkl",  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
 		"tokenizer": None,  					  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
-		"overwrite": False,
+		"overwrite": True,
 		"finetune": True,
 	}
 

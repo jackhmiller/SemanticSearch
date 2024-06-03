@@ -107,6 +107,7 @@ def parse_catalogue(raw_catalogue):
 					item_dict["image_url"] = None
 			except KeyError:
 				item_dict["image_url"] = None
+				item_dict["product_page"] = None
 
 			try:
 				item_dict["avg_rating"] = item_iter['rating']['averageRating']
