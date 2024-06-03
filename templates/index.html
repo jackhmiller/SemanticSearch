@@ -1,6 +1,57 @@
 {% extends 'base.html' %}
 
 {% block content %}
+        <style>
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: calc(33.333% - 40px); /* Adjust width and padding for responsive design */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card h5 {
+            margin-top: 0;
+        }
+
+        .card p {
+            margin-bottom: 10px;
+        }
+
+        .card img {
+            max-width: 100%;
+            height: auto;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .card {
+                width: calc(50% - 40px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                width: 100%;
+            }
+        }
+    </style>
+
     <form method="POST" action="{{ url_for('handle_search') }}">
       <div class="mb-3">
           <input type="text" class="form-control" name="query" id="query" placeholder="Enter your search query" value="{{ query }}" autofocus>
@@ -41,22 +92,23 @@
                     {% endif %}
                     <div class="col"></div>
                 </div>
-                {% for result in results %}
-                    <p>
-                        {{ from_ + loop.index }}. <b><a href="{{ url_for('get_document', id=result._id) }}">{{ result._source._name }}</a></b>
-                        <br>
-                        {{ result._source._paragraph }}
-                        <br>
-                        <small>
-                            Tags: {{ result._source._tags }}
-                        <br>
-                            <img src="{{ result._source._url }}" />
-                        <br>
-                            Price: {{ result._source._price }}
-                            {% if result._score %}<i>(Similarity Score: {{ result._score }})</i>{% endif %}
-                        </small>
-                    </p>
-                {% endfor %}
+                <div class="card-container">
+                    {% for result in results %}
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ from_ + loop.index }}. <a href="{{ url_for('get_document', id=result._id) }}">{{ result._source._name }}</a></h5>
+                                <p class="card-text">{{ result._source._paragraph }}</p>
+                                <p class="card-text"><small class="text-muted">Tags: {{ result._source._tags }}</small></p>
+                                <p class="card-text"><small class="text-muted">Price: {{ result._source._price }}</small></p>
+                                <p class="card-text"><small class="text-muted">Price: {{ result._source._colors }}</small></p>
+                                {% if result._score %}
+                                    <p class="card-text"><small class="text-muted">Similarity Score: {{ result._score }}</small></p>
+                                {% endif %}
+                                <img src="{{ result._source._url }}" class="card-img-bottom" alt="Image" />
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     {% elif request.method == 'POST' %}

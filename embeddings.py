@@ -2,58 +2,16 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import pandas as pd
 from typing import List
-from sentence_transformers import SentenceTransformer
 import os
 import itertools
 
 
 class EmbeddingModel:
 	def __init__(self,
-				 model_name: str='sentence-transformers/all-mpnet-base-v2',
-				 tokenizer: str='sentence-transformers/all-mpnet-base-v2',
-				 max_length: int = 128,
-				 features: List[str] = None,
-				 pretrained: bool = True,
-				 save_model:bool = False,
-				 inference:bool = False,
+				 features: List[str],
 				 ):
-		self.pretrained = pretrained
-		self.tokenizer = self.load_tokenizer(tokenizer)
-		self.model = self.load_model(model_name)
-		self.max_length = max_length
+
 		self.features = features
-		self.save_model = save_model
-		self.inference = inference
-
-		if not inference:
-			assert len(features) > 0
-
-
-	def run_embedding_model(self,
-							data: pd.DataFrame = None,
-							inference_sample: str = None):
-		if self.inference:
-			return self.create_embeddings(inference_sample)[0]
-		else:
-
-			print("Starting to compute embeddings")
-			sentences = self.convert_to_sentences(data)
-			embeddings = self.create_embeddings(sentences)
-			data['embeddings'] = embeddings
-			return data
-
-	def load_model(self, model: str):
-		if self.pretrained:
-			loaded_model = AutoModel.from_pretrained(model)
-			return loaded_model
-
-	def load_tokenizer(self, model: str):
-		if self.pretrained:
-			loaded_model = AutoTokenizer.from_pretrained(model)
-			return loaded_model
-
-	def save_model(self, model):
-		pass
 
 	def convert_to_sentences(self, data: pd.DataFrame) ->list:
 		if len(self.features) > 1:
@@ -64,6 +22,43 @@ class EmbeddingModel:
 			sentences = list(itertools.chain.from_iterable(sentences))
 
 		return sentences
+
+	@staticmethod
+	def mean_pooling(embeddings, attention_mask):
+		token_embeddings = embeddings[0]
+		input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+		sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+		sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+		return sum_embeddings / sum_mask
+
+
+class PretrainedModel(EmbeddingModel):
+	def __init__(self,
+				 model_name: str,
+				 tokenizer: str,
+				 features: List[str],
+				 max_length: int = 128):
+		EmbeddingModel.__init__(self, features=features)
+		self.tokenizer = self.load_tokenizer(tokenizer)
+		self.model = self.load_model(model_name)
+		self.max_length = max_length
+
+	def load_model(self, model: str):
+		loaded_model = AutoModel.from_pretrained(model)
+		return loaded_model
+
+	def load_tokenizer(self, model: str):
+		loaded_model = AutoTokenizer.from_pretrained(model)
+		return loaded_model
+
+	def run_embedding_model(self,
+							data: pd.DataFrame):
+
+		print("Starting to compute embeddings")
+		sentences = self.convert_to_sentences(data)
+		embeddings = self.create_embeddings(sentences)
+		data['embeddings'] = embeddings
+		return data
 
 	def create_embeddings(self, sentences):
 		encoded_input = self.tokenizer(sentences,
@@ -80,14 +75,55 @@ class EmbeddingModel:
 
 		return [i.numpy().tolist() for i in final_embeddings]
 
+	def predict(self, inference_sample):
+		return self.create_embeddings(inference_sample)[0]
 
-	@staticmethod
-	def mean_pooling(embeddings, attention_mask):
-		token_embeddings = embeddings[0]
-		input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-		sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
-		sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-		return sum_embeddings / sum_mask
+
+class FinetuneModel(EmbeddingModel):
+	def __init__(self,
+				 model_name: str,
+				 features: List[str],
+				 tokenizer: str = None):
+		EmbeddingModel.__init__(self, features=features)
+		self.model = self.load_model(model_name)
+		self.tokenizer = tokenizer
+		self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+	def load_model(self, model: str):
+		loaded_model = pd.read_pickle(f"gs://{os.getenv('BUCKET_NAME')}/{os.getenv('MODEL_PATH')}/{model}")
+		return loaded_model
+
+	def run_embedding_model(self,
+							data: pd.DataFrame):
+
+		print("Starting to compute embeddings")
+		sentences = self.convert_to_sentences(data)
+		embeddings = self.create_embeddings(sentences)
+		data['embeddings'] = embeddings
+		return data
+
+	def create_embeddings(self, sentences):
+		if self.tokenizer:
+			encoded_input = self.tokenizer(sentences,
+										   padding=True,
+										   truncation=True,
+										   return_tensors='pt',
+										   max_length=self.max_length)
+
+		with torch.no_grad():
+			model_output = self.model.encode(sentences,
+											 device=self.device)
+
+		print(model_output.shape)
+
+		return model_output.tolist()
+
+	def predict(self, inference_sample):
+		with torch.no_grad():
+			prediction = self.model.encode(inference_sample,
+										   device=self.device)
+
+		return prediction
 
 
 

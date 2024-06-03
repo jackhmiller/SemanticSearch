@@ -1,5 +1,6 @@
 from elastic import Search
 import json
+from dotenv import load_dotenv, find_dotenv
 
 
 def main(index_name: str,
@@ -7,7 +8,8 @@ def main(index_name: str,
 
 	es = Search(host='http://localhost:9200',
 				name=index_name,
-				)
+				embedding_model="rotem_model_v1.pkl",
+				feature_set=['tags', 'colors'])
 
 	if reindex:
 		es.reindex_from_gcs()
@@ -26,5 +28,6 @@ def main(index_name: str,
 
 
 if __name__ == '__main__':
+	load_dotenv(find_dotenv())
 	main(index_name='catalogue_embeddings',
-		 reindex=False)
+		 reindex=True)

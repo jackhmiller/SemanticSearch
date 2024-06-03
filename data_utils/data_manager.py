@@ -2,6 +2,15 @@ import pandas as pd
 import os
 from data_utils.gcs import GCSContextManager
 
+def get_embed_hash(model: str, features: list) -> str:
+	if '.' in model:
+		model = model.split('.')[0]
+	elif '/' in model:
+		model = model.split('/')[1]
+
+	return model + '_' + '_'.join(features) + '.parquet'
+
+
 class DataManager:
 	def __init__(self,
 				 path: str,
@@ -23,6 +32,7 @@ class DataManager:
 		return df
 
 	def save_data(self, df: pd.DataFrame) -> None:
+		print("Saving dataframe")
 		blob = os.path.join(self.path, self.hash)
 		with GCSContextManager() as gcs:
 			gcs.save_parquet_to_gcs(df=df,

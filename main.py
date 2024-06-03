@@ -1,12 +1,16 @@
 from elastic import Search
 from flask import Flask, render_template, request
 import re
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 
 es = Search(host='http://localhost:9200',
             name='catalogue_embeddings',
-            )
+            embedding_model="rotem_model_v1.pkl",
+            feature_set=['tags', 'colors'])
 
 def extract_filters(query):
     filters = []

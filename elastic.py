@@ -1,17 +1,25 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from data_utils.gcs import GCSContextManager
+from data_utils import GCSContextManager, get_embed_hash
 from pprint import pprint
 import pandas as pd
-from embeddings import EmbeddingModel
 import os
+from embeddings import FinetuneModel, PretrainedModel
 
 
 class Search:
-	def __init__(self, host, name: str):
+	def __init__(self, host,
+				 name: str,
+				 embedding_model: str,
+				 feature_set: list[str],
+				 ):
 		self.es = Elasticsearch(host)
 		self.index_name = name
-		self.model = EmbeddingModel(inference=True)
+		self.model_name = embedding_model
+		self.feature_set = feature_set
+		self.model = FinetuneModel(model_name=embedding_model,   #todo pretrained
+							  tokenizer=None,
+							  features=feature_set)
 
 	@property
 	def client_info(self):
@@ -26,7 +34,7 @@ class Search:
 		return self.es.get(index=self.index_name, id=id)
 
 	def get_embedding(self, text):
-		return self.model.run_embedding_model(inference_sample=text)
+		return self.model.predict(inference_sample=text)
 
 	def create_index(self):
 		self.es.indices.delete(index=self.index_name,
@@ -38,9 +46,10 @@ class Search:
 		bulk(self.es, self.generate_docs(df))
 
 	def reindex_from_gcs(self):
-		# with GCSContextManager() as gcs:
-		# 	df = gcs.load_parquet_from_gcs(blob_name=) #todo preplace deployed embeddings
-		df = pd.read_parquet("gs://forecasting-algo-dev/embedding_data/all-mpnet-base-v2_overviews.parquet")
+		with GCSContextManager() as gcs:
+			hash = get_embed_hash(self.model_name, self.feature_set)
+			name = os.path.join(os.getenv("EMBEDDING_DATA_PATH"), hash)
+			df = gcs.load_parquet_from_gcs(blob_name=name)
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))
 
@@ -54,9 +63,10 @@ class Search:
 				'_overview': row['overviews'],
 				'_tags': row['tags'],
 				'_price': row['current_price'],
+				'_colors': row['colors'],
 				'_price_status': row['price_status'],
 				'_name': row['product_title'],
-				'_paragraph': row['paragraph'] #unclean overviews
+				'_paragraph': row['paragraph']  # unclean overviews
 			}
 
 	def insert_document(self, document):
@@ -78,7 +88,7 @@ class Search:
 						'knn':
 							{"field": "_embedding",
 							"query_vector": self.get_embedding(text),
-							"k": 10,
+							"k": 15,
 							"num_candidates": 50,
 
 							 # "filter": [
@@ -94,4 +104,8 @@ class Search:
 
 if __name__ == '__main__':
 	es = Search(host='http://localhost:9200',
-				name='catalogue_embeddings')
+				name='catalogue_embeddings',
+				embedding_model="rotem_model_v1.pkl",
+				feature_set=['tags', 'colors'])
+
+	es.reindex_from_gcs()
