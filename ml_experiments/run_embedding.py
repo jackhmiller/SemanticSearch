@@ -1,5 +1,5 @@
 from data_utils import CataloguePreprocessing, DataManager, get_embed_hash, GBQContextManager
-from embeddings import FinetuneModel, PretrainedModel
+from models import FinetuneModel, PretrainedModel
 from dotenv import load_dotenv, find_dotenv
 import os
 from ops.run_tracker import Tracker
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 		"embedding_features": embed,
 		"embedding_model_name": "rotem_model_v1.pkl",  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
 		"tokenizer": None,  					  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
-		"overwrite": True,
+		"overwrite": False,
 		"finetune": True,
 	}
 

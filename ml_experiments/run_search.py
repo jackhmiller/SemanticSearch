@@ -4,12 +4,14 @@ from dotenv import load_dotenv, find_dotenv
 
 
 def main(index_name: str,
+		 model: str,
+		 features: list[str],
 		 reindex: bool = False):
 
 	es = Search(host='http://localhost:9200',
 				name=index_name,
-				embedding_model="rotem_model_v1.pkl",
-				feature_set=['tags', 'colors'])
+				embedding_model=model,
+				feature_set=features)
 
 	if reindex:
 		es.reindex_from_gcs()
@@ -23,11 +25,14 @@ def main(index_name: str,
 		for hit in response["hits"]["hits"]:
 			hit_dict[hit["_id"]] = {'score': hit["_score"]}
 		results[sentence] = hit_dict
-	with open("ran_test.json", 'w') as json_file:
+	with open("test.json", 'w') as json_file:
 		json.dump(results, json_file)
 
 
 if __name__ == '__main__':
 	load_dotenv(find_dotenv())
 	main(index_name='catalogue_embeddings',
-		 reindex=True)
+		 reindex=True,
+		 model="rotem_model_v1.pkl",
+		 features=['tags', 'colors']
+		 )

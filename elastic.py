@@ -4,7 +4,7 @@ from data_utils import GCSContextManager, get_embed_hash
 from pprint import pprint
 import pandas as pd
 import os
-from embeddings import FinetuneModel, PretrainedModel
+from models import FinetuneModel, PretrainedModel
 
 
 class Search:
