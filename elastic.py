@@ -15,11 +15,9 @@ class Search:
 				 ):
 		self.es = Elasticsearch(host)
 		self.index_name = name
-		self.model_name = embedding_model
-		self.feature_set = feature_set
+		self.hash = get_embed_hash(embedding_model, feature_set)
 		self.model = FinetuneModel(model_name=embedding_model,   #todo pretrained
-							  tokenizer=None,
-							  features=feature_set)
+							  	   tokenizer=None)
 
 	@property
 	def client_info(self):
@@ -47,8 +45,7 @@ class Search:
 
 	def reindex_from_gcs(self):
 		with GCSContextManager() as gcs:
-			hash = get_embed_hash(self.model_name, self.feature_set)
-			name = os.path.join(os.getenv("EMBEDDING_DATA_PATH"), hash)
+			name = os.path.join(os.getenv("EMBEDDING_DATA_PATH"), self.hash)
 			df = gcs.load_parquet_from_gcs(blob_name=name)
 		self.create_index()
 		bulk(self.es, self.generate_docs(df))

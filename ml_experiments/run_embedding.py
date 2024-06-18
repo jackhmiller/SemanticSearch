@@ -3,7 +3,7 @@ from models import FinetuneModel, PretrainedModel
 from dotenv import load_dotenv, find_dotenv
 import os
 from ops.run_tracker import Tracker
-from elastic import Search
+from utilities import df_col_to_sentences
 
 
 def main(file: str,
@@ -42,21 +42,21 @@ def main(file: str,
 	if finetune:
 		print("Running finetuning model")
 		model = FinetuneModel(model_name=embedding_model_name,
-							  tokenizer=tokenizer,
-							  features=embedding_features)
+							  tokenizer=tokenizer)
 	else:
 		print("Running pretrained model")
 		model = PretrainedModel(model_name=embedding_model_name,
-								tokenizer=tokenizer,
-								features=embedding_features)
+								tokenizer=tokenizer)
 
 	if (embed_data_manager.check_hash()) & (not overwrite):
 		pass
 	else:
 		data = clean_data_manager.read_hash()
+		sentences = df_col_to_sentences(features=embedding_features,
+										data=data)
 
-		data_with_embedding = model.run_embedding_model(data=data)
-		embed_data_manager.save_data(data_with_embedding)
+		data['embeddings'] = model.create_embeddings(sentences=sentences)
+		embed_data_manager.save_data(data)
 		
 		with GBQContextManager() as gbq:
 			gbq.append_run(tracker)
@@ -64,11 +64,11 @@ def main(file: str,
 
 
 if __name__ == '__main__':
-	embed = ['tags', 'colors']
+	embed = ['tags', 'colors', 'style', 'hierarchys']
 	model_params = {
 		"file": 'athleta_sample.ndjson',
 		"embedding_features": embed,
-		"embedding_model_name": "rotem_model_v1.pkl",  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
+		"embedding_model_name": "sentence_transformer_model_with_click.pkl",  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
 		"tokenizer": None,  					  # for pretrained: 'sentence-transformers/all-mpnet-base-v2'
 		"overwrite": False,
 		"finetune": True,
