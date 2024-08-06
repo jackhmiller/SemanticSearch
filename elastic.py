@@ -99,6 +99,28 @@ class Search:
 		return self.es.search(index=self.index_name,
 							  **search_kwargs)
 
+	def composite_search(self, text):
+		search_kwargs = {
+			"query": {
+				"script_score": {
+					"query": {"match_all": {}},
+					"script": {
+						"source": """
+							cosineSimilarity(params.query_vector, '_embedding') + 
+							params.sentiment_boost * doc['sentiment'].value
+						""",
+						"params": {
+							"query_vector": self.get_embedding(text),
+							"sentiment_boost": 1.0
+						}
+					}
+				}
+			}
+		}
+
+		return self.es.search(index=self.index_name,
+							  **search_kwargs)
+
 
 if __name__ == '__main__':
 	es = Search(host='http://localhost:9200',
